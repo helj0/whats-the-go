@@ -24,14 +24,15 @@ reuses its data files but the two aren't connected at runtime, and the web
 app had a browsable "Tier List" feature that was deliberately removed from
 this bot's design. Don't reintroduce it here without being asked.
 
-## 1. What's actually implemented (11 commands)
+## 1. What's actually implemented (12 commands)
 
 | Command | Real, tested behavior |
 |---|---|
-| `/events` | Lists live + upcoming events. Live events (up to 5) each get a button — **this is interactive**, not just a static reply (see §3). |
+| `/events` | Lists live events, with a button per one (up to 4) — **this is interactive**, not just a static reply (see §3). Upcoming events live behind a separate "See upcoming events" button rather than in the same view. |
 | `/raids` | Current raid bosses across live events, with quick-jump buttons to `/counters` for the top 3. |
-| `/counters <pokemon>` | Best PVE counters by type effectiveness × raid power (eDPS where available, tier-band fallback otherwise). Autocomplete on species name. |
+| `/counters <pokemon>` | Best PVE counters by type effectiveness × raid power (eDPS where available, tier-band fallback otherwise; Mega/Shadow/Legendary forms considered too). Autocomplete on species name. |
 | `/catch <pokemon> [shiny] [cp]` | Logs a catch. Auto-tags to a live event if that species is currently featured. Rate-limited (10/min/user) and CP-validated (10–6000). |
+| `/release <pokemon> [shiny]` | Undoes a `/catch` — removes the most recent matching catch via `db.removeMostRecentCatch()`, regardless of which event (or none) it was tagged to. Rate-limited the same as `/catch`. |
 | `/profile view/edit` | Trainer profile: level, bio, buddy, catch stats, recent catches. Subcommands, not options — don't flatten these back into one command, Discord doesn't allow mixing top-level options with subcommands (see §6, bug #1). |
 | `/medals [trainer]` | Per-event completion: Locked → Gold (every featured species caught) → Platinum (+ their shinies). Ported from the web app's Medals tab, which never actually made it into the bot until this was built. |
 | `/leaderboard` | Top collectors *in the current server*, ranked by total catches. Catches aren't stored per-guild in the DB — this resolves global top collectors down to actual guild members via individual `members.fetch()` calls, which works without the privileged GuildMembers intent. |

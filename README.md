@@ -23,6 +23,7 @@ below before extending it.
 | `/raids` | Current raid bosses across all live events, with quick-jump buttons to counters |
 | `/counters <pokemon>` | Best PVE counters for a raid boss (type effectiveness × raid power level) |
 | `/catch <pokemon> [shiny] [cp]` | Log a catch to your profile; auto-tags it to a live event if that species is currently featured |
+| `/release <pokemon> [shiny]` | Remove a catch you logged by mistake — undoes the most recent matching `/catch` |
 | `/profile view [trainer]` | Your profile (or a friend's) — level, bio, buddy, catch stats, recent catches |
 | `/profile edit` | Set your trainer name, level, bio, buddy |
 | `/medals [trainer]` | Event completion medals — locked / Gold / Platinum, yours or a friend's |
