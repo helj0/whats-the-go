@@ -61,8 +61,10 @@ async function checkAndAnnounce(client) {
 }
 
 function startScheduler(client) {
-  checkAndAnnounce(client); // run once at boot
-  setInterval(() => checkAndAnnounce(client), POLL_INTERVAL_MS);
+  checkAndAnnounce(client).catch(err => console.error('[scheduler] boot check failed:', err.message)); // run once at boot
+  setInterval(() => {
+    checkAndAnnounce(client).catch(err => console.error('[scheduler] poll failed:', err.message));
+  }, POLL_INTERVAL_MS);
   console.log(`[scheduler] polling every ${POLL_INTERVAL_MS / 60000} minutes`);
 }
 

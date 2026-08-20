@@ -8,6 +8,16 @@ const { startScheduler } = require('./scheduler');
 const { POKEMON } = require('./data/roster');
 const { buildCountersEmbed } = require('./commands/counters');
 
+// Process-level safety nets — one bad promise rejection anywhere (including
+// in the scheduler's background loop, which isn't covered by the
+// interactionCreate try/catch below) shouldn't take the whole bot down.
+process.on('unhandledRejection', (err) => {
+  console.error('[bot] unhandled rejection:', err);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[bot] uncaught exception:', err);
+});
+
 const { DISCORD_TOKEN } = process.env;
 if (!DISCORD_TOKEN) {
   console.error('Missing DISCORD_TOKEN in your environment.');
@@ -22,6 +32,8 @@ for (const file of fs.readdirSync(commandsDir).filter(f => f.endsWith('.js'))) {
   const command = require(path.join(commandsDir, file));
   if (command.data) client.commands.set(command.data.name, command);
 }
+
+client.on('error', (err) => console.error('[bot] client error:', err));
 
 client.once('ready', async () => {
   console.log(`[bot] logged in as ${client.user.tag}, in ${client.guilds.cache.size} guild(s)`);

@@ -2,7 +2,12 @@ const { SlashCommandBuilder } = require('discord.js');
 const { POKEMON, autocompleteChoices } = require('../data/roster');
 const { liveEvents } = require('../utils/event-helpers');
 const { baseEmbed, typeLine } = require('../utils/embeds');
+const { isRateLimited } = require('../utils/rate-limit');
 const db = require('../db');
+
+const MAX_CATCHES_PER_WINDOW = 10;
+const WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REASONABLE_CP = 6000; // generous ceiling — real max CPs top out around here even for boosted legendaries
 
 // If the species is a featured wild spawn or raid boss of a currently-live
 // event, auto-tag the catch with that event so it counts toward completion.
@@ -32,12 +37,22 @@ module.exports = {
   },
 
   async execute(interaction) {
+    if (isRateLimited(`catch:${interaction.user.id}`, MAX_CATCHES_PER_WINDOW, WINDOW_MS)) {
+      return interaction.reply({
+        content: `Whoa, slow down! Max ${MAX_CATCHES_PER_WINDOW} catches per minute — give it a few seconds and try again.`,
+        ephemeral: true,
+      });
+    }
+
     const id = interaction.options.getString('pokemon');
     const shiny = interaction.options.getBoolean('shiny') || false;
     const cp = interaction.options.getInteger('cp');
     const p = POKEMON[id];
     if (!p) {
       return interaction.reply({ content: "Couldn't find that species — pick one from the autocomplete list.", ephemeral: true });
+    }
+    if (cp !== null && (cp < 10 || cp > MAX_REASONABLE_CP)) {
+      return interaction.reply({ content: `That CP doesn't look right (expected somewhere between 10 and ${MAX_REASONABLE_CP}) — double check and try again, or leave it off and set it later.`, ephemeral: true });
     }
 
     const ev = findLiveEventFor(id);
@@ -51,3 +66,4 @@ module.exports = {
     await interaction.reply({ embeds: [embed] });
   },
 };
+
