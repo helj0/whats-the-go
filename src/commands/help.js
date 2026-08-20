@@ -23,7 +23,7 @@ const SECTIONS = [
       '`/catch <pokemon> [shiny] [cp]` — log a catch (auto-tags to a live event if it\'s featured)',
       '`/release <pokemon> [shiny]` — remove a catch you logged by mistake',
       '`/profile view [trainer]` — see your profile, or a friend\'s',
-      '`/profile edit` — set your name, level, bio, buddy',
+      '`/profile edit` — set your name, level, bio, buddy, or profile colour',
     ],
   },
   {

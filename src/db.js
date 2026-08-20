@@ -31,9 +31,12 @@ async function initDb() {
       level INTEGER,
       bio TEXT,
       buddy_pokemon_id TEXT,
+      profile_color TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
+  // Table may already exist from before profile_color was added — ALTER is a no-op if it's already there.
+  await pool.query(`ALTER TABLE trainers ADD COLUMN IF NOT EXISTS profile_color TEXT;`);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS catches (
       id SERIAL PRIMARY KEY,
@@ -80,13 +83,13 @@ async function upsertTrainer(userId, fields) {
   if (existing) {
     const merged = { ...existing, ...fields };
     await pool.query(
-      `UPDATE trainers SET trainer_name=$2, level=$3, bio=$4, buddy_pokemon_id=$5 WHERE user_id=$1`,
-      [userId, merged.trainer_name, merged.level, merged.bio, merged.buddy_pokemon_id]
+      `UPDATE trainers SET trainer_name=$2, level=$3, bio=$4, buddy_pokemon_id=$5, profile_color=$6 WHERE user_id=$1`,
+      [userId, merged.trainer_name, merged.level, merged.bio, merged.buddy_pokemon_id, merged.profile_color]
     );
   } else {
     await pool.query(
-      `INSERT INTO trainers (user_id, trainer_name, level, bio, buddy_pokemon_id) VALUES ($1,$2,$3,$4,$5)`,
-      [userId, fields.trainer_name || null, fields.level || null, fields.bio || null, fields.buddy_pokemon_id || null]
+      `INSERT INTO trainers (user_id, trainer_name, level, bio, buddy_pokemon_id, profile_color) VALUES ($1,$2,$3,$4,$5,$6)`,
+      [userId, fields.trainer_name || null, fields.level || null, fields.bio || null, fields.buddy_pokemon_id || null, fields.profile_color || null]
     );
   }
 }

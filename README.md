@@ -25,7 +25,7 @@ below before extending it.
 | `/catch <pokemon> [shiny] [cp]` | Log a catch to your profile; auto-tags it to a live event if that species is currently featured |
 | `/release <pokemon> [shiny]` | Remove a catch you logged by mistake — undoes the most recent matching `/catch` |
 | `/profile view [trainer]` | Your profile (or a friend's) — level, bio, buddy, catch stats, recent catches |
-| `/profile edit` | Set your trainer name, level, bio, buddy |
+| `/profile edit` | Set your trainer name, level, bio, buddy (any species, no need to have caught it), or profile colour (matched to a type) |
 | `/medals [trainer]` | Event completion medals — locked / Gold / Platinum, yours or a friend's |
 | `/leaderboard` | Top collectors in this server — friendly competition |
 | `/spawns` | Current event wild spawns |
