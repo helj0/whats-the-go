@@ -13,10 +13,22 @@ const TYPE_COLORS = {
 const TYPE_LIST = ['normal','fire','water','electric','grass','ice','fighting','poison','ground',
   'flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
 
+// Custom application emojis (uploaded to this bot's Developer Portal Emojis
+// tab) — these render correctly inside real message/embed content (typeLine()
+// in embeds.js, so /counters, /catch, /spawns, /raids, /profile view, etc.),
+// but NOT inside slash command choice labels (profile.js's colour dropdown
+// stays on plain text for that reason — Discord only renders plain text
+// there, custom emoji syntax would just show up as literal `<:name:id>` text).
 const TYPE_EMOJI = {
-  normal:'⚪', fire:'🔥', water:'💧', electric:'⚡', grass:'🌿', ice:'❄️', fighting:'🥊',
-  poison:'☠️', ground:'🌎', flying:'🪽', psychic:'🔮', bug:'🐛', rock:'🪨', ghost:'👻',
-  dragon:'🐉', dark:'🌑', steel:'⚙️', fairy:'✨'
+  normal:'<:normal:1539959759816622200>', fire:'<:fire:1539959749016031332>',
+  water:'<:water:1539959780708458566>', electric:'<:electric:1539959743932801084>',
+  grass:'<:grass:1539959754217095238>', ice:'<:ice:1539959757266223124>',
+  fighting:'<:fighting:1539959747132792893>', poison:'<:poison:1539959761603137687>',
+  ground:'<:ground:1539959755710402560>', flying:'<:flying:1539959750769516614>',
+  psychic:'<:psychic:1539959763419275284>', bug:'<:bug:1539959738975002684>',
+  rock:'<:rock:1539959765264891995>', ghost:'<:ghost:1539959752375668776>',
+  dragon:'<:dragon:1539959742263201812>', dark:'<:dark:1539959740585742416>',
+  steel:'<:steel:1539959779110162463>', fairy:'<:fairy:1539959745509593221>'
 };
 
 // attacker type -> { defender type: multiplier }, only non-1x listed

@@ -1,10 +1,13 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { POKEMON, autocompleteChoices } = require('../data/roster');
-const { TYPE_LIST, TYPE_EMOJI } = require('../data/types');
+const { TYPE_LIST } = require('../data/types');
 const { baseEmbed, typeColorInt, typeBannerAttachment } = require('../utils/embeds');
 const db = require('../db');
 
-const COLOR_CHOICES = TYPE_LIST.map(t => ({ name: `${TYPE_EMOJI[t] || ''} ${t.charAt(0).toUpperCase() + t.slice(1)}`.trim(), value: t }));
+// Slash command choice labels only ever render as plain text — Discord doesn't
+// parse custom emoji syntax there, so this stays plain (unlike typeLine() in
+// embeds.js, which shows the real custom emoji since that's real message content).
+const COLOR_CHOICES = TYPE_LIST.map(t => ({ name: t.charAt(0).toUpperCase() + t.slice(1), value: t }));
 
 module.exports = {
   data: new SlashCommandBuilder()
