@@ -17,17 +17,14 @@ const MAX_SPECIES_ROWS = 4; // leaves 1 of Discord's 5-action-row cap for the Ba
 const MAX_LIVE_EVENT_ROWS = 4; // leaves 1 of Discord's 5-action-row cap for the "See upcoming" button
 
 async function toggleEventCatch(userId, eventId, pokemonId, shiny) {
+  // Base and shiny are toggled fully independently — catching the shiny no longer
+  // auto-logs the base catch. (Previously it did; changed at the user's request.)
   const already = await db.hasCatch(userId, pokemonId, shiny, eventId);
   if (already) {
     await db.removeEventCatch(userId, pokemonId, shiny, eventId);
     return;
   }
   await db.addCatch(userId, pokemonId, { shiny, eventId });
-  if (shiny) {
-    // Catching the shiny always counts as catching the base too, if it isn't already logged.
-    const baseAlready = await db.hasCatch(userId, pokemonId, false, eventId);
-    if (!baseAlready) await db.addCatch(userId, pokemonId, { shiny: false, eventId });
-  }
 }
 
 async function buildEventListView() {

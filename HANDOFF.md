@@ -93,10 +93,9 @@ the shared module behind the whole click-through flow:
   checkmark if caught) — this requires a DB read on every render, it's not
   cached.
 - `toggleEventCatch(userId, eventId, pokemonId, shiny)` — the actual
-  toggle logic. **Catching the shiny always also logs the base catch if
-  it isn't already logged** (one-directional — un-toggling the shiny does
-  not un-toggle the base). This was a specific, explicit design ask, not
-  an assumption — don't "simplify" it away.
+  toggle logic. Base and shiny catches are toggled fully independently —
+  catching the shiny no longer implies the base is caught too. (This used
+  to auto-log the base catch; that was removed at the user's request.)
 
 `index.js`'s `interactionCreate` handler routes `isButton()` interactions
 by splitting `customId` on `:` — `ev:back`, `ev:v:*`, `ev:c:*:*:b|s`, plus
