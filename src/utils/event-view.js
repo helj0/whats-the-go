@@ -14,6 +14,26 @@ const { baseEmbed, typeColorInt } = require('./embeds');
 const db = require('../db');
 
 const MAX_SPECIES_ROWS = 4; // leaves 1 of Discord's 5-action-row cap for the Back button
+const EMBED_FIELD_LIMIT = 1024; // Discord's hard cap on a single embed field's value
+
+// Joins per-event lines into one field value, stopping before Discord's 1024-char
+// field limit and noting how many got left off. The static 12-event seed data never
+// hit this; the live ScrapedDuck feed can return 30+ events, so this is load-bearing now.
+function buildEventListField(events, lineFn) {
+  const lines = [];
+  let used = 0;
+  for (const ev of events) {
+    const line = lineFn(ev);
+    const addLen = line.length + (lines.length ? 2 : 0); // account for the '\n\n' join
+    if (used + addLen > EMBED_FIELD_LIMIT - 40) break; // leave headroom for the "+N more" note
+    lines.push(line);
+    used += addLen;
+  }
+  let value = lines.join('\n\n');
+  const remaining = events.length - lines.length;
+  if (remaining > 0) value += `\n\n*+${remaining} more — use /raids or /spawns for current details*`;
+  return value;
+}
 
 async function toggleEventCatch(userId, eventId, pokemonId, shiny) {
   const already = await db.hasCatch(userId, pokemonId, shiny, eventId);
@@ -42,13 +62,13 @@ async function buildEventListView() {
   if (live.length) {
     embed.addFields({
       name: '🟢 Live now — tap one below to open it',
-      value: live.map(ev => `**${ev.title}**\nEnds in ${formatCountdown(ev.end - Date.now())} \u00b7 ${formatRange(ev)}`).join('\n\n'),
+      value: buildEventListField(live, ev => `**${ev.title}**\nEnds in ${formatCountdown(ev.end - Date.now())} \u00b7 ${formatRange(ev)}`),
     });
   }
   if (upcoming.length) {
     embed.addFields({
       name: '🔜 On deck',
-      value: upcoming.map(ev => `**${ev.title}**\nStarts in ${formatCountdown(ev.start - Date.now())} \u00b7 ${formatRange(ev)}`).join('\n\n'),
+      value: buildEventListField(upcoming, ev => `**${ev.title}**\nStarts in ${formatCountdown(ev.start - Date.now())} \u00b7 ${formatRange(ev)}`),
     });
   }
   if (live[0]) embed.setColor(typeColorInt(live[0].colorTypes && live[0].colorTypes.length ? live[0].colorTypes : ['normal']));
