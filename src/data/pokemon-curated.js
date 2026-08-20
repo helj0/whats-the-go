@@ -186,13 +186,33 @@ const POKEMON = {
     rarity:{score:88,catchRate:'~2%',fleeRate:'—',movementType:'Raid / Special Research',hatch:'Not available from eggs',regional:false,exclusive:true,costume:false},
     bulbapedia:'https://bulbapedia.bulbagarden.net/wiki/Necrozma_(Pok%C3%A9mon)'
   },
+  'necrozma-dawnwings':{ id:'necrozma-dawnwings', name:'Dawn Wings Necrozma', dex:800, types:['psychic','ghost'],
+    description:'A radiant being fused with a spectral moon-guardian, cloaking itself in a ghostly, wing-like mantle of light.',
+    family:[{name:'Necrozma',candy:0},{name:'Dawn Wings Necrozma',candy:0}], megaSteps:[],
+    specialEvolution:'Formed by fusing Necrozma with Lunala — costs 1,000 Lunar Fusion Energy, 30 Necrozma Candy, and 30 Cosmog Candy. Not a Candy evolution.',
+    variants:[{label:'Dusk Mane Necrozma',shiny:true,note:'Alternate fusion — Necrozma with Solgaleo instead, same Fusion Energy cost.'}], hasShiny:true,
+
+    pve:{standard:{available:true,tier:'S',dpsBar:84,rank:4,fast:'Confusion',charge:'Moongeist Beam',note:'A strong Ghost attacker; distinct typing from Dusk Mane, which is Steel instead.',estimated:true}, shadow:{available:false}, mega:{available:false}, legendary:{available:true,tier:'S',dpsBar:84,rank:4,fast:'Confusion',charge:'Moongeist Beam',note:'A high-DPS Legendary pick when available in raids.',estimated:true}},
+    rarity:{score:88,catchRate:'~2%',fleeRate:'—',movementType:'Raid / Special Research',hatch:'Not available from eggs',regional:false,exclusive:true,costume:false},
+    bulbapedia:'https://bulbapedia.bulbagarden.net/wiki/Necrozma_(Pok%C3%A9mon)'
+  },
   'kyurem-black':{ id:'kyurem-black', name:'Black Kyurem', dex:646, types:['dragon','ice'],
     description:'A hollow dragon fused with its aggressive counterpart, gaining explosive power at the cost of stability.',
     family:[{name:'Kyurem',candy:0},{name:'Black Kyurem',candy:0}], megaSteps:[],
     specialEvolution:'Formed by fusing Kyurem with Zekrom — costs 1,000 Volt Fusion Energy, 30 Kyurem Candy, and 30 Zekrom Candy. Not a Candy evolution.',
     variants:[{label:'White Kyurem',shiny:true,note:'Alternate fusion — Kyurem with Reshiram instead, using Blaze Fusion Energy.'}], hasShiny:true,
-    
+
     pve:{standard:{available:true,tier:'S',dpsBar:85,rank:4,fast:'Dragon Breath',charge:'Freeze Shock',note:'Strong Ice attacker; Elite TM move needed for best DPS.'}, shadow:{available:false}, mega:{available:false}, legendary:{available:true,tier:'S',dpsBar:85,rank:4,fast:'Dragon Breath',charge:'Freeze Shock',note:'A top Ice-type pick when available in raids.'}},
+    rarity:{score:85,catchRate:'~2%',fleeRate:'—',movementType:'Raid / Special Research',hatch:'Not available from eggs',regional:false,exclusive:true,costume:false},
+    bulbapedia:'https://bulbapedia.bulbagarden.net/wiki/Kyurem_(Pok%C3%A9mon)'
+  },
+  'kyurem-white':{ id:'kyurem-white', name:'White Kyurem', dex:646, types:['dragon','ice'],
+    description:'A hollow dragon fused with its radiant counterpart, channeling searing power through an otherwise fragile frame.',
+    family:[{name:'Kyurem',candy:0},{name:'White Kyurem',candy:0}], megaSteps:[],
+    specialEvolution:'Formed by fusing Kyurem with Reshiram — costs 1,000 Blaze Fusion Energy, 30 Kyurem Candy, and 30 Reshiram Candy. Not a Candy evolution.',
+    variants:[{label:'Black Kyurem',shiny:true,note:'Alternate fusion — Kyurem with Zekrom instead, using Volt Fusion Energy.'}], hasShiny:true,
+
+    pve:{standard:{available:true,tier:'S',dpsBar:85,rank:4,fast:'Dragon Breath',charge:'Ice Burn',note:'Strong Ice attacker; same raw power tier as Black Kyurem with a different signature Charged Move.',estimated:true}, shadow:{available:false}, mega:{available:false}, legendary:{available:true,tier:'S',dpsBar:85,rank:4,fast:'Dragon Breath',charge:'Ice Burn',note:'A top Ice-type pick when available in raids.',estimated:true}},
     rarity:{score:85,catchRate:'~2%',fleeRate:'—',movementType:'Raid / Special Research',hatch:'Not available from eggs',regional:false,exclusive:true,costume:false},
     bulbapedia:'https://bulbapedia.bulbagarden.net/wiki/Kyurem_(Pok%C3%A9mon)'
   },
@@ -226,10 +246,14 @@ const POKEMON = {
   },
   mewtwo:{ id:'mewtwo', name:'Mewtwo', dex:150, types:['psychic'],
     description:'A genetically engineered Pokémon whose raw psychic power is said to rival that of the Legendaries it was created to surpass.',
-    family:[{name:'Mewtwo',candy:0}], megaSteps:[], specialEvolution:'Does not evolve.',
-    variants:[{label:'Armored Mewtwo',shiny:false,note:'Alternate research-only appearance with different stats. Not yet released as shiny.'}], hasShiny:true,
-    
-    pve:{standard:{available:true,tier:'A+',dpsBar:83,rank:3,fast:'Confusion',charge:'Psystrike',note:'A premier Psychic attacker with a huge Attack stat.'}, shadow:{available:false}, mega:{available:false}, legendary:{available:true,tier:'A+',dpsBar:83,rank:3,fast:'Confusion',charge:'Psystrike',note:'A top pick whenever active as a raid boss.'}},
+    family:[{name:'Mewtwo',candy:0}],
+    megaSteps:[{name:'Mega Mewtwo Y',energyLabel:'Mega Energy',note:'Also has a Mega Mewtwo X form (Psychic/Fighting) not separately tracked here.'}],
+    specialEvolution:'Does not evolve.',
+    variants:[{label:'Armored Mewtwo',shiny:false,note:'Alternate research-only appearance with different stats. Not yet released as shiny.'},{label:'Mega Mewtwo Y',shiny:true,note:'Also has a Mega Mewtwo X form (Psychic/Fighting) not separately tracked here.'}], hasShiny:true,
+
+    pve:{standard:{available:true,tier:'A+',dpsBar:83,rank:3,fast:'Confusion',charge:'Psystrike',note:'A premier Psychic attacker with a huge Attack stat.'}, shadow:{available:false},
+      mega:{available:true,tier:'S+',dpsBar:98,rank:1,fast:'Confusion',charge:'Psystrike',note:'One of the single strongest Mega raid attackers in the game.'},
+      legendary:{available:true,tier:'A+',dpsBar:83,rank:3,fast:'Confusion',charge:'Psystrike',note:'A top pick whenever active as a raid boss.'}},
     rarity:{score:80,catchRate:'~2%',fleeRate:'—',movementType:'Raid / Research encounter',hatch:'Not available from eggs',regional:false,exclusive:false,costume:false},
     bulbapedia:'https://bulbapedia.bulbagarden.net/wiki/Mewtwo_(Pok%C3%A9mon)'
   },

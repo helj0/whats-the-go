@@ -56,6 +56,7 @@ function bestCountersFor(target, limit = 10) {
     candidates.push({
       pokemon: p,
       form,
+      displayName: role.label || (form ? `${form} ${p.name}` : p.name),
       effectiveness: bestEff,
       score: powerBase * bestEff,
       source,

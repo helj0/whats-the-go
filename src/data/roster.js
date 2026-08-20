@@ -11,6 +11,7 @@
 const { POKEMON: CURATED } = require('./pokemon-curated');
 const { POKEMON_BASIC_RAW } = require('./roster-expanded');
 const { EDPS_DATA } = require('./edps');
+const { MEGA_FORMS, MEGA_TIER_PROFILE } = require('./mega-forms');
 
 const ESTIMATED_PVE_PROFILE = {
   legendary: { tier: 'A', dpsBar: 78 },
@@ -49,6 +50,25 @@ for (const row of POKEMON_BASIC_RAW) {
 // Attach eDPS to curated species too (keyed by their own string ids in edps.js)
 for (const id of Object.keys(EDPS_DATA)) {
   if (POKEMON[id] && !POKEMON[id].pve.edps) POKEMON[id].pve.edps = EDPS_DATA[id];
+}
+
+// Attach tier-band Mega data to species that only exist in the basic roster
+// (see mega-forms.js). Matches by name since these species don't have curated
+// ids — skips anything already carrying real curated Mega data so this never
+// clobbers researched entries like Gyarados/Garchomp/Metagross/Tyranitar/Swampert.
+for (const entry of MEGA_FORMS) {
+  const match = Object.values(POKEMON).find(p => p.name === entry.name);
+  if (!match) continue; // name not found in the roster — skip rather than guess
+  if (match.pve.mega && match.pve.mega.available) continue; // already has real curated data
+  const prof = MEGA_TIER_PROFILE[entry.band];
+  match.pve.mega = {
+    available: true,
+    tier: prof.tier,
+    dpsBar: prof.dpsBar,
+    estimated: true,
+    label: entry.label || `Mega ${match.name}`,
+    note: entry.note || 'Tier-band estimate — no precise DPS computed for this Mega form yet.',
+  };
 }
 
 const ALL_POKEMON = Object.values(POKEMON).sort((a, b) => a.name.localeCompare(b.name));

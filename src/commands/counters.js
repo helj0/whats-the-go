@@ -19,9 +19,8 @@ function buildCountersEmbed(target) {
       const effLabel = c.effectiveness >= 2.5 ? '⬆️⬆️ double super-effective' : '⬆️ super-effective';
       const moveLabel = c.moveset ? ` — *${c.moveset.fast} + ${c.moveset.charge}*` : '';
       const sourceTag = c.source === 'verified' ? '✅' : c.source === 'estimated' ? '🔷' : '🔹';
-      const displayName = c.form ? `${c.form} ${c.pokemon.name}` : c.pokemon.name;
       const formNote = c.form === 'Mega' ? ' _(only while its Mega Raid/boost is active)_' : '';
-      return `**${i + 1}. ${displayName}** ${sourceTag}${moveLabel}${formNote}\n${effLabel}`;
+      return `**${i + 1}. ${c.displayName}** ${sourceTag}${moveLabel}${formNote}\n${effLabel}`;
     }).join('\n\n'),
   });
 
