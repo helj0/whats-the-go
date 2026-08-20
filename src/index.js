@@ -77,6 +77,21 @@ client.on('interactionCreate', async (interaction) => {
       }
 
       if (ns === 'ev') {
+        // /events messages are public (not ephemeral), so anyone in the channel can see
+        // and click these buttons. Without this check, a second user clicking one would
+        // toggle *their own* catch data (that part was always safe — see db.js, every
+        // query is scoped by the clicker's own user id) but would also re-render the
+        // shared message using their catch state, making it look to the original user
+        // like their progress had changed when it hadn't. Restrict clicks to whoever
+        // originally ran /events. interaction.update() edits the message in place rather
+        // than recreating it, so interactionMetadata keeps pointing at that original
+        // /events invocation across the whole list -> detail -> back navigation flow.
+        const ownerId = interaction.message.interactionMetadata?.user?.id
+          ?? interaction.message.interaction?.user?.id; // fallback for older cached messages
+        if (ownerId && ownerId !== interaction.user.id) {
+          return interaction.reply({ content: 'This isn’t your menu — run `/events` yourself to get your own.', flags: MessageFlags.Ephemeral });
+        }
+
         if (action === 'back') {
           const view = await buildEventListView();
           await interaction.update(view);
