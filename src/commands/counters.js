@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { POKEMON, autocompleteChoices } = require('../data/roster');
 const { bestCountersFor } = require('../utils/counters');
-const { baseEmbed, typeLine } = require('../utils/embeds');
+const { baseEmbed, typeLine, addListField } = require('../utils/embeds');
 
 function buildCountersEmbed(target) {
   const results = bestCountersFor(target, 8);
@@ -13,16 +13,14 @@ function buildCountersEmbed(target) {
     return embed;
   }
 
-  embed.addFields({
-    name: 'Top picks',
-    value: results.map((c, i) => {
-      const effLabel = c.effectiveness >= 2.5 ? '⬆️⬆️ double super-effective' : '⬆️ super-effective';
-      const moveLabel = c.moveset ? ` — *${c.moveset.fast} + ${c.moveset.charge}*` : '';
-      const sourceTag = c.source === 'verified' ? '✅' : c.source === 'estimated' ? '🔷' : '🔹';
-      const formNote = c.form === 'Mega' ? ' _(only while its Mega Raid/boost is active)_' : '';
-      return `**${i + 1}. ${c.displayName}** ${sourceTag}${moveLabel}${formNote}\n${effLabel}`;
-    }).join('\n\n'),
+  const entries = results.map((c, i) => {
+    const effLabel = c.effectiveness >= 2.5 ? '⬆️⬆️ double super-effective' : '⬆️ super-effective';
+    const moveLabel = c.moveset ? ` — *${c.moveset.fast} + ${c.moveset.charge}*` : '';
+    const sourceTag = c.source === 'verified' ? '✅' : c.source === 'estimated' ? '🔷' : '🔹';
+    const formNote = c.form === 'Mega' ? ' _(only while its Mega Raid/boost is active)_' : '';
+    return `**${i + 1}. ${c.displayName}** ${sourceTag}${moveLabel}${formNote}\n${effLabel}`;
   });
+  addListField(embed, 'Top picks', entries);
 
   embed.setFooter({
     text: '✅ verified from real game data · 🔷 estimated from known stats · 🔹 tier-band estimate only — not a full battle simulation.',

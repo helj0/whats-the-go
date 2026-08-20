@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { currentRaidBosses } = require('../utils/event-helpers');
 const { POKEMON } = require('../data/roster');
-const { baseEmbed, typeLine } = require('../utils/embeds');
+const { baseEmbed, typeLine, addListField } = require('../utils/embeds');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -17,13 +17,12 @@ module.exports = {
       return interaction.reply({ embeds: [embed] });
     }
 
-    embed.setDescription(
-      bosses.map(rb => {
-        const p = POKEMON[rb.id];
-        if (!p) return null;
-        return `**${p.name}** — ${rb.tierLabel}\n${typeLine(p.types)}\n_${rb.note}_ \u00b7 from *${rb.eventTitle}*`;
-      }).filter(Boolean).join('\n\n')
-    );
+    const entries = bosses.map(rb => {
+      const p = POKEMON[rb.id];
+      if (!p) return null;
+      return '**' + p.name + '** — ' + rb.tierLabel + '\n' + typeLine(p.types) + '\n_' + rb.note + '_ · from *' + rb.eventTitle + '*';
+    }).filter(Boolean);
+    addListField(embed, '⚔️ Bosses', entries);
 
     // Quick-jump buttons to check counters for the top 3 bosses (Discord caps rows at 5 buttons)
     const top = bosses.slice(0, 3).map(rb => POKEMON[rb.id]).filter(Boolean);
