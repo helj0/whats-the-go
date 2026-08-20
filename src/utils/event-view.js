@@ -80,7 +80,7 @@ async function buildUpcomingListView() {
   return { embeds: [embed], components: rows };
 }
 
-async function buildEventDetailView(userId, eventId) {
+async function buildEventDetailView(userId, eventId, page = 0) {
   const ev = getEvents().find(e => e.id === eventId);
   if (!ev) return null;
 
@@ -98,41 +98,58 @@ async function buildEventDetailView(userId, eventId) {
 
   const species = eventFeaturedSpecies(ev);
   const rows = [];
+  const totalPages = Math.max(1, Math.ceil(species.length / MAX_SPECIES_ROWS));
+  const safePage = Math.min(Math.max(page, 0), totalPages - 1);
+  const start = safePage * MAX_SPECIES_ROWS;
+  const pageSpecies = species.slice(start, start + MAX_SPECIES_ROWS);
 
   if (species.length > 0) {
     const statusLines = [];
-    for (const id of species.slice(0, MAX_SPECIES_ROWS)) {
+    for (const id of pageSpecies) {
       const p = POKEMON[id];
       const baseCaught = await db.hasCatch(userId, id, false, ev.id);
       const shinyCaught = p.hasShiny ? await db.hasCatch(userId, id, true, ev.id) : false;
 
-      statusLines.push(`${baseCaught ? '✅' : '⬜'} ${p.name}${p.hasShiny ? (shinyCaught ? ' \u2728\u2705' : ' \u2728') : ''}`);
+      statusLines.push(`${baseCaught ? '\u2705' : '\u2b1c'} ${p.name}${p.hasShiny ? (shinyCaught ? ' \u2728\u2705' : ' \u2728') : ''}`);
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setCustomId(`ev:c:${ev.id}:${id}:b`)
+          .setCustomId(`ev:c:${ev.id}:${id}:b:${safePage}`)
           .setLabel(`${p.name}${baseCaught ? ' \u2713 Caught' : ': Caught'}`.slice(0, 80))
           .setStyle(baseCaught ? ButtonStyle.Success : ButtonStyle.Secondary)
       );
       if (p.hasShiny) {
         row.addComponents(
           new ButtonBuilder()
-            .setCustomId(`ev:c:${ev.id}:${id}:s`)
+            .setCustomId(`ev:c:${ev.id}:${id}:s:${safePage}`)
             .setLabel(shinyCaught ? '\u2728 Shiny \u2713' : '\u2728 Shiny caught')
             .setStyle(shinyCaught ? ButtonStyle.Success : ButtonStyle.Secondary)
         );
       }
       rows.push(row);
     }
-    if (species.length > MAX_SPECIES_ROWS) {
-      statusLines.push(`_...and ${species.length - MAX_SPECIES_ROWS} more \u2014 use \`/catch\` for those, too many to fit as buttons here._`);
-    }
-    embed.addFields({ name: 'Featured species', value: statusLines.join('\n') });
+    const fieldName = totalPages > 1 ? `Featured species (page ${safePage + 1}/${totalPages})` : 'Featured species';
+    embed.addFields({ name: fieldName, value: statusLines.join('\n') });
   }
 
-  rows.push(new ActionRowBuilder().addComponents(
+  // Pagination + Back always share one final row rather than eating a whole row each —
+  // species rows are capped at MAX_SPECIES_ROWS (4) so this always fits Discord's 5-row cap.
+  const navRow = new ActionRowBuilder();
+  if (safePage > 0) {
+    navRow.addComponents(
+      new ButtonBuilder().setCustomId(`ev:v:${ev.id}:${safePage - 1}`).setLabel('\u25c0 Previous').setStyle(ButtonStyle.Secondary)
+    );
+  }
+  if (safePage < totalPages - 1) {
+    const remaining = species.length - (start + pageSpecies.length);
+    navRow.addComponents(
+      new ButtonBuilder().setCustomId(`ev:v:${ev.id}:${safePage + 1}`).setLabel(`Show more (${remaining} left) \u25b6`).setStyle(ButtonStyle.Secondary)
+    );
+  }
+  navRow.addComponents(
     new ButtonBuilder().setCustomId('ev:back').setLabel('\u2190 Back to Events').setStyle(ButtonStyle.Secondary)
-  ));
+  );
+  rows.push(navRow);
 
   return { embeds: [embed], components: rows };
 }

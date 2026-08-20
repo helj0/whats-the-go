@@ -103,16 +103,16 @@ client.on('interactionCreate', async (interaction) => {
           return;
         }
         if (action === 'v') {
-          const [, , eventId] = parts;
-          const view = await buildEventDetailView(interaction.user.id, eventId);
+          const [, , eventId, page] = parts;
+          const view = await buildEventDetailView(interaction.user.id, eventId, page ? parseInt(page, 10) : 0);
           if (!view) return interaction.reply({ content: 'That event isn\u2019t live anymore.', flags: MessageFlags.Ephemeral });
           await interaction.update(view);
           return;
         }
         if (action === 'c') {
-          const [, , eventId, pokemonId, kind] = parts;
+          const [, , eventId, pokemonId, kind, page] = parts;
           await toggleEventCatch(interaction.user.id, eventId, pokemonId, kind === 's');
-          const view = await buildEventDetailView(interaction.user.id, eventId);
+          const view = await buildEventDetailView(interaction.user.id, eventId, page ? parseInt(page, 10) : 0);
           if (!view) return interaction.reply({ content: 'That event isn\u2019t live anymore.', flags: MessageFlags.Ephemeral });
           await interaction.update(view);
           return;
