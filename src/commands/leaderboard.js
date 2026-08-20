@@ -44,7 +44,7 @@ module.exports = {
       }).join('\n'),
     });
 
-    embed.setFooter({ text: "What's the GO? Buddy 🐾 \u00b7 keep catching to climb the board! \u00b7 unofficial fan project" });
+    embed.setFooter({ text: "What's the GO? 🐾 \u00b7 keep catching to climb the board! \u00b7 unofficial fan project" });
 
     await interaction.editReply({ embeds: [embed] });
   },

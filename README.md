@@ -1,4 +1,4 @@
-# What's the GO? Buddy — Discord Bot
+# What's the GO? — Discord Bot
 
 A **PVE-focused** Pokémon GO event, raid-counter, and friendly-collecting
 companion bot. Unofficial fan project, not affiliated with Niantic,
@@ -65,7 +65,7 @@ You mentioned you already have a bot token, but that's tied to a different
 application — bot tokens aren't reusable across apps, so you'll need a new one:
 
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) → **New Application**.
-2. Name it (e.g. "What's the GO? Buddy").
+2. Name it (e.g. "What's the GO?").
 3. Go to **Bot** in the sidebar → **Reset Token** → copy it. This is your `DISCORD_TOKEN`. Keep it secret — anyone with it can control the bot.
 4. Go to **General Information** → copy the **Application ID**. This is your `DISCORD_CLIENT_ID`.
 5. Still on the **Bot** page, make sure **Public Bot** is on if you want others to be able to invite it later (fine to leave on even for personal use).
@@ -126,6 +126,12 @@ hosting needed, and no copyrighted character artwork. If you want real
 sprite-style art later, that needs a rights-cleared source; datamined
 assets (Pokéminers or similar) carry real infringement risk regardless of
 whether other bots have gotten away with it so far.
+
+`/profile view` goes a step further: it renders a real PNG "trainer card"
+server-side per request (`src/utils/trainer-card.js`, via `@napi-rs/canvas`),
+using the bundled type icons plus fonts in `/assets/fonts/` (Unbounded,
+Manrope, Space Mono — pulled from Google's font source repo, not the
+system). See HANDOFF.md §5a for how it works and why.
 
 ## Data honesty — read before extending
 

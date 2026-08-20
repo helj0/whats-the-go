@@ -1,17 +1,14 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 const { POKEMON, autocompleteChoices } = require('../data/roster');
-const { TYPE_LIST, TYPE_EMOJI, SHINY_EMOJI } = require('../data/types');
-const { baseEmbed, typeColorInt, typeBannerAttachment } = require('../utils/embeds');
+const { TYPE_LIST } = require('../data/types');
+const { baseEmbed, typeColorInt } = require('../utils/embeds');
+const { renderTrainerCard } = require('../utils/trainer-card');
 const db = require('../db');
 
 // Slash command choice labels only ever render as plain text — Discord doesn't
 // parse custom emoji syntax there, so this stays plain (unlike typeLine() in
 // embeds.js, which shows the real custom emoji since that's real message content).
 const COLOR_CHOICES = TYPE_LIST.map(t => ({ name: t.charAt(0).toUpperCase() + t.slice(1), value: t }));
-
-function typeEmojiPrefix(p) {
-  return p.types.map(t => TYPE_EMOJI[t] || '').join('');
-}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -63,47 +60,38 @@ module.exports = {
       return interaction.reply({ content: '✅ Profile updated!', ephemeral: true });
     }
 
-    // view
+    // view — deferred since rendering the card (fetching the avatar + drawing) can
+    // take longer than Discord's 3s ack window, especially on a cold start.
+    await interaction.deferReply();
+
     const targetUser = interaction.options.getUser('trainer') || interaction.user;
     const trainer = await db.getTrainer(targetUser.id);
     const counts = await db.getCatchCounts(targetUser.id);
-    const recent = await db.getRecentCatches(targetUser.id, 8);
+    const recent = await db.getRecentCatches(targetUser.id, 4);
 
-    const levelText = trainer?.level ? `Lv. ${trainer.level}` : 'Level not set';
+    const type = trainer?.profile_color && TYPE_LIST.includes(trainer.profile_color) ? trainer.profile_color : 'normal';
+    const buddy = trainer?.buddy_pokemon_id && POKEMON[trainer.buddy_pokemon_id] ? POKEMON[trainer.buddy_pokemon_id] : null;
+    const recentCatches = recent.map(c => {
+      const p = POKEMON[c.pokemon_id];
+      return { name: p ? p.name : c.pokemon_id, types: p ? p.types : ['normal'], shiny: c.shiny, cp: c.cp };
+    });
+
+    const cardBuffer = await renderTrainerCard({
+      trainerName: trainer?.trainer_name || targetUser.username,
+      level: trainer?.level || null,
+      avatarUrl: targetUser.displayAvatarURL({ extension: 'png', size: 128 }),
+      buddy,
+      stats: counts,
+      recentCatches,
+      type,
+    });
+    const attachment = new AttachmentBuilder(cardBuffer, { name: 'trainer-card.png' });
+
     const embed = baseEmbed(`🎽 ${trainer?.trainer_name || targetUser.username}'s Profile`)
-      .setThumbnail(targetUser.displayAvatarURL())
-      .addFields({
-        name: '​',
-        value: `**${levelText}** · 🎯 **${counts.total}** catches · ${SHINY_EMOJI} **${counts.shinies}** shiny · 🧬 **${counts.unique_species}** species`,
-      });
-    let files;
-    if (trainer?.profile_color) {
-      embed.setColor(typeColorInt([trainer.profile_color]));
-      const banner = typeBannerAttachment(trainer.profile_color);
-      embed.setImage(banner.imageUrl);
-      files = banner.files;
-    }
-
+      .setColor(typeColorInt([type]))
+      .setImage('attachment://trainer-card.png');
     if (trainer?.bio) embed.addFields({ name: 'Bio', value: trainer.bio });
-    if (trainer?.buddy_pokemon_id && POKEMON[trainer.buddy_pokemon_id]) {
-      const buddy = POKEMON[trainer.buddy_pokemon_id];
-      embed.addFields({ name: 'Buddy', value: `${typeEmojiPrefix(buddy)} ${buddy.name}` });
-    }
 
-    if (recent.length) {
-      embed.addFields({
-        name: 'Recent catches',
-        value: recent.map(c => {
-          const p = POKEMON[c.pokemon_id];
-          const name = p ? p.name : c.pokemon_id;
-          const typePrefix = p ? typeEmojiPrefix(p) + ' ' : '';
-          return `${typePrefix}${c.shiny ? SHINY_EMOJI + ' ' : ''}${name}${c.cp ? ` · CP ${c.cp}` : ''}`;
-        }).join('\n'),
-      });
-    } else {
-      embed.addFields({ name: 'Recent catches', value: 'Nothing logged yet — try `/catch`!' });
-    }
-
-    await interaction.reply(files ? { embeds: [embed], files } : { embeds: [embed] });
+    await interaction.editReply({ embeds: [embed], files: [attachment] });
   },
 };

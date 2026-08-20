@@ -48,7 +48,7 @@ module.exports = {
     .setDescription('See everything this bot can do'),
 
   async execute(interaction) {
-    const embed = baseEmbed("🐾 What's the GO? Buddy — Commands")
+    const embed = baseEmbed("🐾 What's the GO? — Commands")
       .setDescription("Your PVE Pokémon GO companion \u2014 events, raid counters, and friendly collecting with your server. Here's everything I can do:");
     for (const section of SECTIONS) {
       embed.addFields({ name: section.name, value: section.lines.join('\n') });

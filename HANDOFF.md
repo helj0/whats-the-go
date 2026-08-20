@@ -1,4 +1,4 @@
-# What's the GO? Buddy — Discord Bot Handoff
+# What's the GO? — Discord Bot Handoff
 
 A PVE-focused Pokémon GO companion Discord bot: automated event news,
 raid counters, catch/collection tracking, and light social features
@@ -160,6 +160,68 @@ image hosting is needed. If event announcements want a banner image,
 generate one programmatically from type colors + the bundled icons (see
 the mockup-generation approach used for the reference JPEGs shared in
 conversation — same principle, not yet built into the actual bot).
+
+## 5a. Trainer card — a real generated image, not an embed trick
+
+`/profile view` no longer shows stats/buddy/catches as embed text — it
+renders a single PNG server-side (`src/utils/trainer-card.js`, via
+`@napi-rs/canvas`) and attaches it as the embed's image. This was a
+deliberate escalation from the type-banner approach in §5: banners are just
+a bundled asset attached as-is, this actually draws a unique image per
+request with a real Node canvas API (rounded rects, clipped circles,
+gradients, per-row layout).
+
+**Why `@napi-rs/canvas` over `node-canvas`:** ships prebuilt binaries per
+platform, so `npm install` on Railway's Linux container just works. Plain
+`node-canvas` needs system Cairo/Pango at build time and is a common source
+of broken Docker builds for exactly this kind of feature — avoided
+entirely by not using it.
+
+**Background color is derived from the trainer's `/profile edit colour`**
+(defaults to `normal`/grey if unset) — a diagonal gradient from a darkened
+to a lightened version of that type's hex (`TYPE_COLORS`), not a flat fill.
+Text/panel ink color is picked per-render by a simple luma check
+(`paletteFor()` in trainer-card.js) — light types (Electric, Ice, Fairy...)
+get dark ink, dark types (Dark, Ghost, Poison...) get light ink. This is
+necessary, not decorative: with the card's whole background now tied to an
+arbitrary type color instead of a fixed dark neutral, hardcoding white text
+would be unreadable on light types.
+
+**No emoji glyphs are ever drawn on the canvas.** Railway's container has
+no color-emoji font installed, so `ctx.fillText('✨')` silently renders as
+a blank box — confirmed by hitting exactly this with a ★ character before
+switching to a hand-drawn path (`drawStar()`). Anything "iconic" on the
+card is either plain text/symbols any bundled font covers, or the bot's own
+bundled type-icon PNGs drawn via `loadImage()` — never a Unicode emoji
+codepoint. Custom Discord emoji (`<:name:id>`, used in embeds/buttons
+elsewhere in this bot — see `TYPE_EMOJI`/`SHINY_EMOJI` in types.js) doesn't
+apply here at all; those only resolve inside real Discord messages, not
+inside a canvas-drawn image.
+
+**Fonts are bundled, not system-installed**: `assets/fonts/` has
+Unbounded (variable, display weight), Manrope (variable, body), and Space
+Mono (two static weights — regular/bold, for tabular stat digits/CP
+values). Pulled from Google's font source repo (raw TTF, not woff/woff2 —
+`@napi-rs/canvas`'s `GlobalFonts.registerFromPath` wants ttf/otf/ttc).
+Confirmed the variable-font weight selection actually works — `ctx.font =
+'800 40px Unbounded'` really does pick the ExtraBold instance, verified by
+rendering both 400 and 800 side by side and comparing.
+
+**Avatar** is fetched fresh per render (`fetchBuffer()` + `loadImage()`)
+from the trainer's real Discord avatar URL — falls back to a flat panel-color
+circle if the fetch fails, rather than erroring the whole card out.
+
+**Known rough edge**: if a trainer's buddy happens to share a type with
+their own profile colour (e.g. a Dragon-type buddy on a Dragon-colored
+card), the buddy chip's type dot for that type can visually blend into the
+card background — the chip has its own translucent backing so it's not
+unreadable, just low-contrast in that one coincidental case. Not fixed;
+noted here so it isn't mistaken for a new bug later.
+
+`/profile view` now calls `interaction.deferReply()` before rendering,
+since the avatar fetch + draw can plausibly exceed Discord's 3s
+interaction-ack window (this wasn't needed before, when the command did no
+network I/O of its own beyond the DB).
 
 ## 6. Real bugs found during development (context for why some code looks defensive)
 
