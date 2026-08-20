@@ -21,6 +21,7 @@ notes below before extending it.
 | `/bonuses` | Current event bonuses + Star Piece / Lucky Egg / Incense recommendations |
 | `/setup channel` | (Admin) Set which channel gets event push announcements |
 | `/setup status` | (Admin) Check current settings |
+| `/help` | List all commands, in-Discord |
 
 A background scheduler checks every 5 minutes for events that just went
 live and pushes an announcement to every server that's run `/setup channel`
@@ -124,8 +125,12 @@ keep the tagging.
    how those were computed and why it's capped there.
 3. **PVP data (Great/Ultra League) covers 51 species**; Master League was
    never fetched at all in this project's history.
-4. **No moderation/rate-limiting** on `/catch` — someone could spam-log
-   fake catches. Fine for a small trusted server, worth adding guardrails
+4. **Basic anti-spam only.** `/catch` is rate-limited to 10 calls/minute
+   per user (in-memory, resets on restart) and rejects CP values outside
+   10–6000. That stops accidental spam and typos, not a determined bad
+   actor — there's still no server-side validation that a catch is
+   "real," so a motivated user could still log fake catches within the
+   rate limit. Fine for a small trusted server; worth hardening further
    before opening this to the public.
 5. **Single-instance scheduler** — if you ever run more than one bot
    instance (e.g. horizontal scaling), the 5-minute poll loop will run in
