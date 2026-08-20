@@ -14,6 +14,7 @@ const { baseEmbed, typeColorInt, addListField } = require('./embeds');
 const db = require('../db');
 
 const MAX_SPECIES_ROWS = 4; // leaves 1 of Discord's 5-action-row cap for the Back button
+const MAX_LIVE_EVENT_ROWS = 4; // leaves 1 of Discord's 5-action-row cap for the "See upcoming" button
 
 async function toggleEventCatch(userId, eventId, pokemonId, shiny) {
   const already = await db.hasCatch(userId, pokemonId, shiny, eventId);
@@ -42,20 +43,43 @@ async function buildEventListView() {
   if (live.length) {
     const entries = live.map(ev => '**' + ev.title + '**\nEnds in ' + formatCountdown(ev.end - Date.now()) + ' \u00b7 ' + formatRange(ev));
     addListField(embed, '🟢 Live now — tap one below to open it', entries);
-  }
-  if (upcoming.length) {
-    const entries = upcoming.map(ev => '**' + ev.title + '**\nStarts in ' + formatCountdown(ev.start - Date.now()) + ' \u00b7 ' + formatRange(ev));
-    addListField(embed, '🔜 On deck', entries);
+  } else {
+    embed.setDescription("Nothing live right now — check what's coming up below.");
   }
   if (live[0]) embed.setColor(typeColorInt(live[0].colorTypes && live[0].colorTypes.length ? live[0].colorTypes : ['normal']));
 
   // Only live events are interactable — nothing to catch or check off for something that hasn't started.
   const rows = [];
-  for (const ev of live.slice(0, 5)) {
+  for (const ev of live.slice(0, MAX_LIVE_EVENT_ROWS)) {
     rows.push(new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId(`ev:v:${ev.id}`).setLabel(ev.title.slice(0, 80)).setStyle(ButtonStyle.Primary)
     ));
   }
+  if (upcoming.length) {
+    rows.push(new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId('ev:upcoming').setLabel(`🔜 See upcoming events (${upcoming.length})`).setStyle(ButtonStyle.Secondary)
+    ));
+  }
+  return { embeds: [embed], components: rows };
+}
+
+async function buildUpcomingListView() {
+  const events = getEvents();
+  const upcoming = events.filter(ev => eventStatus(ev) === 'upcoming');
+
+  const embed = baseEmbed('🔜 Upcoming Events');
+  if (upcoming.length === 0) {
+    embed.setDescription('Nothing upcoming on the calendar right now — check back soon!');
+  } else {
+    const entries = upcoming.map(ev => '**' + ev.title + '**\nStarts in ' + formatCountdown(ev.start - Date.now()) + ' \u00b7 ' + formatRange(ev));
+    addListField(embed, '🔜 On deck', entries);
+  }
+
+  // Upcoming events aren't interactable — nothing to catch or check off for something
+  // that hasn't started — so this view is just the list plus a way back.
+  const rows = [new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('ev:back').setLabel('\u2190 Back to Events').setStyle(ButtonStyle.Secondary)
+  )];
   return { embeds: [embed], components: rows };
 }
 
@@ -116,4 +140,4 @@ async function buildEventDetailView(userId, eventId) {
   return { embeds: [embed], components: rows };
 }
 
-module.exports = { buildEventListView, buildEventDetailView, toggleEventCatch };
+module.exports = { buildEventListView, buildUpcomingListView, buildEventDetailView, toggleEventCatch };

@@ -8,7 +8,7 @@ const { startScheduler } = require('./scheduler');
 const { startLiveEventsRefresh } = require('./data/live-events');
 const { POKEMON } = require('./data/roster');
 const { buildCountersEmbed } = require('./commands/counters');
-const { buildEventListView, buildEventDetailView, toggleEventCatch } = require('./utils/event-view');
+const { buildEventListView, buildUpcomingListView, buildEventDetailView, toggleEventCatch } = require('./utils/event-view');
 
 // Process-level safety nets — one bad promise rejection anywhere (including
 // in the scheduler's background loop, which isn't covered by the
@@ -79,6 +79,11 @@ client.on('interactionCreate', async (interaction) => {
       if (ns === 'ev') {
         if (action === 'back') {
           const view = await buildEventListView();
+          await interaction.update(view);
+          return;
+        }
+        if (action === 'upcoming') {
+          const view = await buildUpcomingListView();
           await interaction.update(view);
           return;
         }
