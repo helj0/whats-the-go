@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
 const { baseEmbed } = require('../utils/embeds');
+const { getStatus } = require('../data/live-events');
 const db = require('../db');
 
 module.exports = {
@@ -28,11 +29,18 @@ module.exports = {
 
     // status
     const settings = await db.getGuildSettings(interaction.guild.id);
+    const liveStatus = getStatus();
     const embed = baseEmbed('⚙️ Server Settings').setDescription(
       settings && settings.event_channel_id
         ? `Announcements post to <#${settings.event_channel_id}>.`
         : 'No announcement channel set yet \u2014 run `/setup channel` to pick one.'
     );
+    embed.addFields({
+      name: '📡 Event data source',
+      value: liveStatus.usingFallback
+        ? `⚠️ Running on static fallback data (${liveStatus.eventCount} events) \u2014 live fetch from ScrapedDuck ${liveStatus.lastFetchError ? 'failed: ' + liveStatus.lastFetchError : "hasn't succeeded yet"}.`
+        : `✅ Live data from ScrapedDuck (${liveStatus.eventCount} events), last refreshed ${liveStatus.lastFetchTime ? liveStatus.lastFetchTime.toLocaleString() : 'never'}.`,
+    });
     await interaction.reply({ embeds: [embed], ephemeral: true });
   },
 };

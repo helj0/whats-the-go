@@ -21,7 +21,7 @@ function baseEmbed(title) {
   return new EmbedBuilder()
     .setColor(BRAND_COLOR)
     .setTitle(title)
-    .setFooter({ text: "What's the GO? Buddy 🐾 · unofficial fan project, not affiliated with Niantic/Nintendo/Game Freak/The Pokémon Company" });
+    .setFooter({ text: "What's the GO? Buddy 🐾 · unofficial fan project, not affiliated with Niantic/Nintendo/Game Freak/The Pokémon Company · Event data via LeekDuck.com, sourced through ScrapedDuck" });
 }
 
 function speciesThumbnailAttachment(primaryType) {

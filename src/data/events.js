@@ -1,3 +1,10 @@
+// Static seed/fallback event data (12 real Aug-Sep 2026 events, hand-curated
+// including the "Trainer tip" for each). This is NO LONGER the primary event
+// source — see ./live-events.js, which fetches live from ScrapedDuck and
+// falls back to this file only if that fetch fails or its response looks
+// malformed. Kept around specifically so the bot never has zero event data
+// to show, even on a bad network day.
+
 function d(y,mo,day,h,mi){ return new Date(y,mo-1,day,h||0,mi||0).getTime(); }
 
 const EVENTS = [

@@ -5,6 +5,7 @@ const { Client, GatewayIntentBits, Collection, MessageFlags } = require('discord
 
 const db = require('./db');
 const { startScheduler } = require('./scheduler');
+const { startLiveEventsRefresh } = require('./data/live-events');
 const { POKEMON } = require('./data/roster');
 const { buildCountersEmbed } = require('./commands/counters');
 
@@ -42,6 +43,7 @@ client.once('ready', async () => {
   } catch (err) {
     console.error('[bot] database init failed — commands that touch the DB will error until this is fixed:', err.message);
   }
+  startLiveEventsRefresh();
   startScheduler(client);
 });
 

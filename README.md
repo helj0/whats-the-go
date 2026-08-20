@@ -111,15 +111,60 @@ The `/counters` command's footer always explains this. Don't quietly merge
 these tiers into one undifferentiated "power" number if you extend this —
 keep the tagging.
 
-## Known limitations (be upfront about these)
+## Event data: live from ScrapedDuck (with a safety net)
 
-1. **Event data is hardcoded and will go stale.** `src/data/events.js` has
-   12 real Aug–Sep 2026 events with fixed dates. Once those pass, `/events`,
-   `/raids`, `/spawns`, `/bonuses`, and the push scheduler will have nothing
-   live to show. There's no live data source wired up — someone needs to
-   either hand-update `events.js` periodically or build a scraper against a
-   real source (ScrapedDuck/LeekDuck's public event feed is the same kind
-   of source the original web app was built to reference).
+`/events`, `/raids`, `/spawns`, `/bonuses`, and the push scheduler now pull
+from **ScrapedDuck** (bigfoott/ScrapedDuck on GitHub), which scrapes
+LeekDuck.com on its own schedule and republishes it as JSON — refreshed
+here every hour. The static 12-event Aug–Sep 2026 dataset from before is
+kept as a **fallback only**: if the live fetch fails or its response
+doesn't look like valid event data, the bot logs a warning and keeps
+serving the last known-good data (starting with that static set) rather
+than showing nothing or crashing.
+
+**Important — this integration needs to be verified once you have real
+network access (which Railway will, but the sandbox this was built in did
+not):**
+
+The endpoint URL and field-name mapping in `src/data/live-events.js` are
+based on cross-referenced documentation of *other* tools that consume this
+feed (PoGOEvents, go-calendar, MMM-PokemonGOEvents all describe using it),
+not a fetch-and-verify pass against the real JSON — I could not reach
+`raw.githubusercontent.com` from the sandbox (confirmed: the request came
+back with an explicit HTTP 403 from the network proxy, not a timeout, so
+this is a real access restriction, not a fluke). Before trusting this in
+production:
+
+```bash
+node -e "require('./src/data/live-events').refreshEvents().then(() => console.log(require('./src/data/live-events').getStatus()))"
+```
+
+Check `lastFetchOk`. Run `/setup status` in Discord for the same info
+(shows a ⚠️/✅ indicator either way). If it's failing, or events come back
+with suspiciously empty `bonuses`/`raidBosses`/`wildSpawns`, temporarily
+add a `console.log(JSON.stringify(raw[0], null, 2))` right after the fetch
+in `refreshEvents()` to see the real shape, and adjust the field paths in
+`transformEvent()` in the same file to match. That whole function is
+written defensively (returns `null` and skips a malformed event rather
+than throwing) specifically so a wrong guess there degrades gracefully.
+
+**Also worth knowing:** the hand-written "Trainer tip" that appeared on
+each of the 12 seed events doesn't have an equivalent in ScrapedDuck's
+feed — live-fetched events won't have one (the field is just omitted from
+the embed rather than shown empty).
+
+Per ScrapedDuck's usage terms (this bot is free and ad-free, so it's
+covered): always keep the "Event data via LeekDuck.com, sourced through
+ScrapedDuck" credit in the embed footer if you touch `utils/embeds.js`.
+
+
+
+1. **The ScrapedDuck integration is unverified against the live feed** —
+   see the section above. Real-world testing on Railway (or any host with
+   actual internet access) is a required step before you trust it, not an
+   optional nice-to-have. The static `events.js` fallback data will itself
+   go stale after Aug-Sep 2026, but only matters if the live fetch is also
+   broken at that point.
 2. **eDPS coverage is 53 species**, not the full 986-species roster. See
    the web app's `HANDOFF.md` (if you still have that package) for exactly
    how those were computed and why it's capped there.

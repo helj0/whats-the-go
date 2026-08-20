@@ -1,4 +1,4 @@
-const { EVENTS } = require('../data/events');
+const { getEvents } = require('../data/live-events');
 
 function eventStatus(ev) {
   const now = Date.now();
@@ -7,8 +7,8 @@ function eventStatus(ev) {
   return 'ended';
 }
 
-function liveEvents() { return EVENTS.filter(ev => eventStatus(ev) === 'live'); }
-function upcomingEvents() { return EVENTS.filter(ev => eventStatus(ev) === 'upcoming'); }
+function liveEvents() { return getEvents().filter(ev => eventStatus(ev) === 'live'); }
+function upcomingEvents() { return getEvents().filter(ev => eventStatus(ev) === 'upcoming'); }
 
 function formatCountdown(ms) {
   if (ms < 0) ms = 0;

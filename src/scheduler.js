@@ -3,7 +3,7 @@
 // guild's configured channel. Each guild only gets a given event announced
 // once (tracked in guild_settings.announced_event_ids).
 
-const { EVENTS } = require('./data/events');
+const { getEvents } = require('./data/live-events');
 const { eventStatus, formatRange } = require('./utils/event-helpers');
 const { recommendItems } = require('./utils/recommendations');
 const { baseEmbed, typeColorInt } = require('./utils/embeds');
@@ -30,7 +30,7 @@ function buildAnnouncementEmbed(ev) {
 }
 
 async function checkAndAnnounce(client) {
-  const liveNow = EVENTS.filter(ev => eventStatus(ev) === 'live');
+  const liveNow = getEvents().filter(ev => eventStatus(ev) === 'live');
   if (liveNow.length === 0) return;
 
   let guildConfigs;
