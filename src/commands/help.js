@@ -12,17 +12,24 @@ const SECTIONS = [
     ],
   },
   {
-    name: '⚔️ Battling',
+    name: '⚔️ Raid counters',
     lines: [
-      '`/counters <pokemon>` — best PVE counters for a species',
+      '`/counters <pokemon>` — best PVE counters for a raid boss',
     ],
   },
   {
     name: '🎒 Your collection',
     lines: [
       '`/catch <pokemon> [shiny] [cp]` — log a catch (auto-tags to a live event if it\'s featured)',
-      '`/profile view [trainer]` — see your profile, or someone else\'s',
+      '`/profile view [trainer]` — see your profile, or a friend\'s',
       '`/profile edit` — set your name, level, bio, buddy',
+    ],
+  },
+  {
+    name: '🏅 Friendly competition',
+    lines: [
+      '`/medals [trainer]` — event completion medals, yours or a friend\'s',
+      '`/leaderboard` — top collectors in this server',
     ],
   },
   {
@@ -41,7 +48,7 @@ module.exports = {
 
   async execute(interaction) {
     const embed = baseEmbed("🐾 What's the GO? Buddy — Commands")
-      .setDescription("Your Pokémon GO companion, right here in Discord. Here's everything I can do:");
+      .setDescription("Your PVE Pokémon GO companion \u2014 events, raid counters, and friendly collecting with your server. Here's everything I can do:");
     for (const section of SECTIONS) {
       embed.addFields({ name: section.name, value: section.lines.join('\n') });
     }

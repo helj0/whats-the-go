@@ -1,11 +1,19 @@
 # What's the GO? Buddy — Discord Bot
 
-A Pokémon GO event/raid/collection companion bot. Unofficial fan project,
-not affiliated with Niantic, Nintendo, Game Freak, or The Pokémon Company.
+A **PVE-focused** Pokémon GO event, raid-counter, and friendly-collecting
+companion bot. Unofficial fan project, not affiliated with Niantic,
+Nintendo, Game Freak, or The Pokémon Company.
 
-Reuses the species roster, PvPoke-sourced PVP data, and eDPS calculations
-from the companion web app this project started as — see the data-honesty
-notes below before extending it.
+This bot does not track, compute, or display any PVP data — that's a
+deliberate scope decision, not an oversight. It's built around three
+things: automated event news, PVE raid counters based on real type
+matchups and general Pokémon GO raid knowledge, and light social features
+(medals, a leaderboard) to encourage friendly collecting between friends
+in a server.
+
+Reuses the species roster and eDPS raid-power calculations from the
+companion web app this project started as — see the data-honesty notes
+below before extending it.
 
 ## Commands
 
@@ -13,19 +21,40 @@ notes below before extending it.
 |---|---|
 | `/events` | Live and upcoming events |
 | `/raids` | Current raid bosses across all live events, with quick-jump buttons to counters |
-| `/counters <pokemon>` | Best PVE counters for a species (type effectiveness × power level) |
+| `/counters <pokemon>` | Best PVE counters for a raid boss (type effectiveness × raid power level) |
 | `/catch <pokemon> [shiny] [cp]` | Log a catch to your profile; auto-tags it to a live event if that species is currently featured |
-| `/profile view [trainer]` | Your profile (or someone else's) — level, bio, buddy, catch stats, recent catches |
+| `/profile view [trainer]` | Your profile (or a friend's) — level, bio, buddy, catch stats, recent catches |
 | `/profile edit` | Set your trainer name, level, bio, buddy |
+| `/medals [trainer]` | Event completion medals — locked / Gold / Platinum, yours or a friend's |
+| `/leaderboard` | Top collectors in this server — friendly competition |
 | `/spawns` | Current event wild spawns |
 | `/bonuses` | Current event bonuses + Star Piece / Lucky Egg / Incense recommendations |
 | `/setup channel` | (Admin) Set which channel gets event push announcements |
-| `/setup status` | (Admin) Check current settings |
+| `/setup status` | (Admin) Check current settings, including live event-data health |
 | `/help` | List all commands, in-Discord |
 
 A background scheduler checks every 5 minutes for events that just went
-live and pushes an announcement to every server that's run `/setup channel`
-— each server only gets a given event announced once.
+live and automatically pushes a "now live" announcement (bonuses included)
+to every server that's run `/setup channel` — each server only gets a
+given event announced once. This is the automated news piece: no one has
+to remember to check for events, the bot tells the server when something
+starts.
+
+## Medals — how they work
+
+Ported from the companion web app's Medals tab:
+
+- **Gold** — every featured species from an event (wild spawns + raid
+  bosses) has been caught at least once (`/catch` auto-tags it if the
+  event is live when you log it)
+- **Platinum** — Gold, plus every shiny-eligible featured species has been
+  caught in its shiny form too
+- Events with no catchable species (league-only events, etc.) don't get a
+  medal at all — nothing to complete
+
+`/medals` shows every event's status for you or a friend. `/leaderboard`
+ranks the server by total catches logged, to nudge friendly competition
+without needing medals to be the only way to compare notes.
 
 ## Setup
 
@@ -167,17 +196,16 @@ ScrapedDuck" credit in the embed footer if you touch `utils/embeds.js`.
    broken at that point.
 2. **eDPS coverage is 53 species**, not the full 986-species roster. See
    the web app's `HANDOFF.md` (if you still have that package) for exactly
-   how those were computed and why it's capped there.
-3. **PVP data (Great/Ultra League) covers 51 species**; Master League was
-   never fetched at all in this project's history.
-4. **Basic anti-spam only.** `/catch` is rate-limited to 10 calls/minute
+   how those were computed and why it's capped there. (This is base-stat
+   / raid-power data, not PVP — the bot doesn't have or want PVP data.)
+3. **Basic anti-spam only.** `/catch` is rate-limited to 10 calls/minute
    per user (in-memory, resets on restart) and rejects CP values outside
    10–6000. That stops accidental spam and typos, not a determined bad
    actor — there's still no server-side validation that a catch is
    "real," so a motivated user could still log fake catches within the
    rate limit. Fine for a small trusted server; worth hardening further
    before opening this to the public.
-5. **Single-instance scheduler** — if you ever run more than one bot
+4. **Single-instance scheduler** — if you ever run more than one bot
    instance (e.g. horizontal scaling), the 5-minute poll loop will run in
    every instance and could double-announce. Not a concern at your current
    scale, but don't spin up a second Railway instance of this without

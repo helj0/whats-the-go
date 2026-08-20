@@ -143,10 +143,19 @@ async function getEventCatches(userId, eventId) {
   );
   return rows;
 }
+async function getTopCollectors(limit = 50) {
+  const { rows } = await pool.query(
+    `SELECT user_id, COUNT(*)::int AS total, COUNT(*) FILTER (WHERE shiny)::int AS shinies,
+            COUNT(DISTINCT pokemon_id)::int AS unique_species
+     FROM catches GROUP BY user_id ORDER BY total DESC LIMIT $1`,
+    [limit]
+  );
+  return rows;
+}
 
 module.exports = {
   pool, initDb,
   setGuildEventChannel, getGuildSettings, getAllGuildSettingsWithChannel, markEventAnnounced,
   upsertTrainer, getTrainer,
-  addCatch, removeMostRecentCatch, hasCatch, getRecentCatches, getCatchCounts, getEventCatches,
+  addCatch, removeMostRecentCatch, hasCatch, getRecentCatches, getCatchCounts, getEventCatches, getTopCollectors,
 };

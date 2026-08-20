@@ -24,7 +24,7 @@ function buildCountersEmbed(target) {
   });
 
   embed.setFooter({
-    text: '✅ verified PvPoke/fetched stats · 🔷 estimated from known stats · 🔹 tier-band estimate only — not a full battle simulation.',
+    text: '✅ verified from real game data · 🔷 estimated from known stats · 🔹 tier-band estimate only — not a full battle simulation.',
   });
   return embed;
 }

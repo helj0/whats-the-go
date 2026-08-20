@@ -1,17 +1,15 @@
 // Builds the unified species roster once, at process start, and exports it.
-// Mirrors the same merge logic used in the companion web app: 30 hand-curated
-// species with real/researched detail, plus 956 more (Gen 1-9) with an
-// estimated PVE tier band, real PvPoke-sourced PVP data for 51 of them, and
-// computed eDPS "power level" for 53 of them.
+// PVE-focused only — this bot does not track or display any PVP data.
+// Mirrors the companion web app's merge logic: 30 hand-curated species with
+// real/researched PVE detail, plus 956 more (Gen 1-9) with an estimated PVE
+// tier band, and computed eDPS "power level" for 53 of them.
 //
-// Every species carries an explicit `dataSource` object so commands can be
-// honest in embeds about what's real vs. estimated — do not strip this out
-// when adding features. See HANDOFF.md in the source web app for the full
-// data-honesty rationale this project has followed throughout.
+// Every species carries an explicit source marker (`estimated: true` /
+// `isBasic: true` / eDPS `source`) so commands can be honest in embeds
+// about what's real vs. estimated — do not strip this out when extending.
 
 const { POKEMON: CURATED } = require('./pokemon-curated');
 const { POKEMON_BASIC_RAW } = require('./roster-expanded');
-const { PVPOKE_REAL } = require('./pvp-sourced');
 const { EDPS_DATA } = require('./edps');
 
 const ESTIMATED_PVE_PROFILE = {
@@ -20,25 +18,19 @@ const ESTIMATED_PVE_PROFILE = {
   regular: { tier: 'C', dpsBar: 42 },
 };
 
-const PVPOKE_REAL_BY_DEX = {};
-for (const r of PVPOKE_REAL) PVPOKE_REAL_BY_DEX[r.dex] = r;
-
-const POKEMON = { ...CURATED };
+const POKEMON = {};
+// Curated species come with a legacy `pvp` block baked into their source
+// data (pokemon-curated.js, ported from the web app) — strip it here so
+// nothing PVP-related exists anywhere in the runtime roster, even unused.
+for (const [id, p] of Object.entries(CURATED)) {
+  const { pvp, ...rest } = p;
+  POKEMON[id] = rest;
+}
 
 for (const row of POKEMON_BASIC_RAW) {
   const [dex, name, types, hasShiny, tierBand = 'regular'] = row;
   const id = 'gen-' + dex;
   const prof = ESTIMATED_PVE_PROFILE[tierBand];
-  const real = PVPOKE_REAL_BY_DEX[dex];
-
-  let pvp = { great: { available: false }, ultra: { available: false }, master: { available: false }, movesets: [] };
-  if (real) {
-    if (real.great) pvp.great = { available: true, rank: real.great.rank, pool: real.great.pool, sourced: true };
-    if (real.ultra) pvp.ultra = { available: true, rank: real.ultra.rank, pool: real.ultra.pool, sourced: true };
-    const src = real.great || real.ultra;
-    pvp.movesets = [{ fast: src.fast, charge: src.charges[0], tag: 'best' }];
-    if (src.charges[1]) pvp.movesets.push({ fast: src.fast, charge: src.charges[1], tag: 'good' });
-  }
 
   POKEMON[id] = {
     id, name, dex, types, hasShiny,
@@ -50,7 +42,6 @@ for (const row of POKEMON_BASIC_RAW) {
       legendary: tierBand === 'legendary' ? { available: true, tier: prof.tier, dpsBar: prof.dpsBar, estimated: true } : { available: false },
       edps: EDPS_DATA[id] || null,
     },
-    pvp,
     bulbapedia: `https://bulbapedia.bulbagarden.net/wiki/${encodeURIComponent(name)}_(Pok%C3%A9mon)`,
   };
 }
