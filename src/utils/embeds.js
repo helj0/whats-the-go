@@ -78,4 +78,15 @@ function speciesThumbnailAttachment(primaryType) {
   return { files: [file], thumbnailUrl: `attachment://${primaryType}.png` };
 }
 
-module.exports = { BRAND_COLOR, SUCCESS_COLOR, INFO_COLOR, typeColorInt, typeLine, baseEmbed, speciesThumbnailAttachment, addListField, capField };
+function typeBannerAttachment(type) {
+  // Returns { files, imageUrl } — same attachment:// trick as the type icons,
+  // for the wide gradient banner PNGs bundled in assets/banners (filenames are
+  // UPPERCASE, e.g. FIRE.png — matches how they were provided).
+  const { AttachmentBuilder } = require('discord.js');
+  const path = require('path');
+  const filePath = path.join(__dirname, '..', '..', 'assets', 'banners', `${type.toUpperCase()}.png`);
+  const file = new AttachmentBuilder(filePath, { name: `${type}-banner.png` });
+  return { files: [file], imageUrl: `attachment://${type}-banner.png` };
+}
+
+module.exports = { BRAND_COLOR, SUCCESS_COLOR, INFO_COLOR, typeColorInt, typeLine, baseEmbed, speciesThumbnailAttachment, typeBannerAttachment, addListField, capField };

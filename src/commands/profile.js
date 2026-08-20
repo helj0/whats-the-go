@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { POKEMON, autocompleteChoices } = require('../data/roster');
 const { TYPE_LIST, TYPE_EMOJI } = require('../data/types');
-const { baseEmbed, typeColorInt } = require('../utils/embeds');
+const { baseEmbed, typeColorInt, typeBannerAttachment } = require('../utils/embeds');
 const db = require('../db');
 
 const COLOR_CHOICES = TYPE_LIST.map(t => ({ name: `${TYPE_EMOJI[t] || ''} ${t.charAt(0).toUpperCase() + t.slice(1)}`.trim(), value: t }));
@@ -70,7 +70,13 @@ module.exports = {
         { name: 'Shinies', value: String(counts.shinies), inline: true },
         { name: 'Unique species', value: String(counts.unique_species), inline: true },
       );
-    if (trainer?.profile_color) embed.setColor(typeColorInt([trainer.profile_color]));
+    let files;
+    if (trainer?.profile_color) {
+      embed.setColor(typeColorInt([trainer.profile_color]));
+      const banner = typeBannerAttachment(trainer.profile_color);
+      embed.setImage(banner.imageUrl);
+      files = banner.files;
+    }
 
     if (trainer?.bio) embed.addFields({ name: 'Bio', value: trainer.bio });
     if (trainer?.buddy_pokemon_id && POKEMON[trainer.buddy_pokemon_id]) {
@@ -90,6 +96,6 @@ module.exports = {
       embed.addFields({ name: 'Recent catches', value: 'Nothing logged yet — try `/catch`!' });
     }
 
-    await interaction.reply({ embeds: [embed] });
+    await interaction.reply(files ? { embeds: [embed], files } : { embeds: [embed] });
   },
 };
