@@ -63,7 +63,7 @@ const EVENTS = [
     summary:'Great week for Water-type shiny hunting across raids, spawns, and eggs.',
     highlight:'Check egg hatches and raid rotations daily this week — the Water Festival boosts spawns across all three categories at once.',
     bonuses:[ {glyph:'◇',value:'Boosted',label:'Water-type raids, spawns & eggs'}, {glyph:'★',value:'Extra',label:'Special Trade range'} ],
-    raidBosses:[], wildSpawns:['magikarp','starmie'] },
+    raidBosses:[], wildSpawns:['gen-54','gen-72','gen-118','magikarp','gen-183','gen-320','gen-341','gen-580','gen-592','gen-747','gen-751','gen-767','gyarados','gen-349','gen-366','gen-960'] },
 
   { id:'megaraid-starmie', title:'Mega Starmie Raid Day', mechanicType:'megaraid', typeLabel:'Mega Raid Day', colorTypes:['water','psychic'],
     start:d(2026,8,22,11,0), end:d(2026,8,22,17,0),

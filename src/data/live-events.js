@@ -26,6 +26,7 @@
 const https = require('https');
 const { EVENTS: FALLBACK_EVENTS } = require('./events');
 const { findByName } = require('./roster');
+const { EVENT_SPAWN_OVERRIDES } = require('./event-spawn-overrides');
 
 const SCRAPEDDUCK_URL = 'https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/events.json';
 const REFRESH_INTERVAL_MS = 60 * 60 * 1000; // hourly — LeekDuck/ScrapedDuck updates on its own schedule, no need to hammer it
@@ -103,7 +104,11 @@ function transformEvent(raw) {
       id: pid, note: 'Raid boss', tier: 'unknown', tierLabel: 'Raid', weight: 3,
     }));
 
-    const spawnNames = extra.spawns ? extra.spawns.map(s => s.name || s) : [];
+    // ScrapedDuck only gives a real spawns array for some event types — for generic
+    // "event" entries it just reports extraData.generic.hasSpawns: true/false with no
+    // species list. Fall back to a manually-verified override for known cases like that
+    // (see event-spawn-overrides.js) rather than showing an empty spawns list.
+    const spawnNames = extra.spawns ? extra.spawns.map(s => s.name || s) : (EVENT_SPAWN_OVERRIDES[id] || []);
     const wildSpawns = mapSpeciesNamesToIds(spawnNames);
 
     return {
