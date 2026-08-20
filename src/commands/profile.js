@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { POKEMON, autocompleteChoices } = require('../data/roster');
-const { TYPE_LIST } = require('../data/types');
+const { TYPE_LIST, TYPE_EMOJI, SHINY_EMOJI } = require('../data/types');
 const { baseEmbed, typeColorInt, typeBannerAttachment } = require('../utils/embeds');
 const db = require('../db');
 
@@ -8,6 +8,10 @@ const db = require('../db');
 // parse custom emoji syntax there, so this stays plain (unlike typeLine() in
 // embeds.js, which shows the real custom emoji since that's real message content).
 const COLOR_CHOICES = TYPE_LIST.map(t => ({ name: t.charAt(0).toUpperCase() + t.slice(1), value: t }));
+
+function typeEmojiPrefix(p) {
+  return p.types.map(t => TYPE_EMOJI[t] || '').join('');
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -65,14 +69,13 @@ module.exports = {
     const counts = await db.getCatchCounts(targetUser.id);
     const recent = await db.getRecentCatches(targetUser.id, 8);
 
+    const levelText = trainer?.level ? `Lv. ${trainer.level}` : 'Level not set';
     const embed = baseEmbed(`🎽 ${trainer?.trainer_name || targetUser.username}'s Profile`)
       .setThumbnail(targetUser.displayAvatarURL())
-      .addFields(
-        { name: 'Level', value: trainer?.level ? String(trainer.level) : 'Not set', inline: true },
-        { name: 'Catches', value: String(counts.total), inline: true },
-        { name: 'Shinies', value: String(counts.shinies), inline: true },
-        { name: 'Unique species', value: String(counts.unique_species), inline: true },
-      );
+      .addFields({
+        name: '​',
+        value: `**${levelText}** · 🎯 **${counts.total}** catches · ${SHINY_EMOJI} **${counts.shinies}** shiny · 🧬 **${counts.unique_species}** species`,
+      });
     let files;
     if (trainer?.profile_color) {
       embed.setColor(typeColorInt([trainer.profile_color]));
@@ -83,7 +86,8 @@ module.exports = {
 
     if (trainer?.bio) embed.addFields({ name: 'Bio', value: trainer.bio });
     if (trainer?.buddy_pokemon_id && POKEMON[trainer.buddy_pokemon_id]) {
-      embed.addFields({ name: 'Buddy', value: POKEMON[trainer.buddy_pokemon_id].name });
+      const buddy = POKEMON[trainer.buddy_pokemon_id];
+      embed.addFields({ name: 'Buddy', value: `${typeEmojiPrefix(buddy)} ${buddy.name}` });
     }
 
     if (recent.length) {
@@ -92,7 +96,8 @@ module.exports = {
         value: recent.map(c => {
           const p = POKEMON[c.pokemon_id];
           const name = p ? p.name : c.pokemon_id;
-          return `${c.shiny ? '✨ ' : ''}${name}${c.cp ? ` · CP ${c.cp}` : ''}`;
+          const typePrefix = p ? typeEmojiPrefix(p) + ' ' : '';
+          return `${typePrefix}${c.shiny ? SHINY_EMOJI + ' ' : ''}${name}${c.cp ? ` · CP ${c.cp}` : ''}`;
         }).join('\n'),
       });
     } else {

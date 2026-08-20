@@ -10,7 +10,8 @@ const { eventStatus, formatRange, formatRelative } = require('./event-helpers');
 const { eventFeaturedSpecies } = require('./medals');
 const { POKEMON } = require('../data/roster');
 const { recommendItems } = require('./recommendations');
-const { baseEmbed, typeColorInt, addListField } = require('./embeds');
+const { baseEmbed, typeColorInt, addListField, typeBannerAttachment } = require('./embeds');
+const { TYPE_EMOJI, SHINY_EMOJI, SHINY_EMOJI_COMPONENT } = require('../data/types');
 const db = require('../db');
 
 const MAX_SPECIES_ROWS = 4; // leaves 1 of Discord's 5-action-row cap for the Back button
@@ -85,9 +86,13 @@ async function buildEventDetailView(userId, eventId, page = 0) {
   if (!ev) return null;
 
   const st = eventStatus(ev);
+  const bannerType = ev.colorTypes && ev.colorTypes.length ? ev.colorTypes[0] : 'normal';
   const embed = baseEmbed(`${st === 'live' ? '🟢' : '🔜'} ${ev.title}`)
     .setDescription(`${ev.summary}\n\n**Runs:** ${formatRange(ev)}`)
     .setColor(typeColorInt(ev.colorTypes && ev.colorTypes.length ? ev.colorTypes : ['normal']));
+
+  const banner = typeBannerAttachment(bannerType);
+  embed.setImage(banner.imageUrl);
 
   if (ev.bonuses && ev.bonuses.length) {
     embed.addFields({ name: 'Bonuses', value: ev.bonuses.map(b => `${b.glyph} **${b.value}** \u2014 ${b.label}`).join('\n') });
@@ -110,7 +115,9 @@ async function buildEventDetailView(userId, eventId, page = 0) {
       const baseCaught = await db.hasCatch(userId, id, false, ev.id);
       const shinyCaught = p.hasShiny ? await db.hasCatch(userId, id, true, ev.id) : false;
 
-      statusLines.push(`${baseCaught ? '\u2705' : '\u2b1c'} ${p.name}${p.hasShiny ? (shinyCaught ? ' \u2728\u2705' : ' \u2728') : ''}`);
+      const typePrefix = p.types.map(t => TYPE_EMOJI[t] || '').join('');
+      const shinyMark = p.hasShiny ? ` ${SHINY_EMOJI}${shinyCaught ? ' \u2705' : ''}` : '';
+      statusLines.push(`${baseCaught ? '\u2705' : '\u2b1c'} ${typePrefix} ${p.name}${shinyMark}`);
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -122,7 +129,8 @@ async function buildEventDetailView(userId, eventId, page = 0) {
         row.addComponents(
           new ButtonBuilder()
             .setCustomId(`ev:c:${ev.id}:${id}:s:${safePage}`)
-            .setLabel(shinyCaught ? '\u2728 Shiny \u2713' : '\u2728 Shiny caught')
+            .setEmoji(SHINY_EMOJI_COMPONENT)
+            .setLabel(shinyCaught ? 'Shiny \u2713' : 'Shiny caught')
             .setStyle(shinyCaught ? ButtonStyle.Success : ButtonStyle.Secondary)
         );
       }
@@ -151,7 +159,7 @@ async function buildEventDetailView(userId, eventId, page = 0) {
   );
   rows.push(navRow);
 
-  return { embeds: [embed], components: rows };
+  return { embeds: [embed], components: rows, files: banner.files };
 }
 
 module.exports = { buildEventListView, buildUpcomingListView, buildEventDetailView, toggleEventCatch };

@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { currentWildSpawns } = require('../utils/event-helpers');
 const { POKEMON } = require('../data/roster');
 const { baseEmbed, typeLine, addListField } = require('../utils/embeds');
+const { SHINY_EMOJI } = require('../data/types');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -20,10 +21,10 @@ module.exports = {
     const entries = spawns.map(s => {
       const p = POKEMON[s.id];
       if (!p) return null;
-      return '**' + p.name + '**' + (p.hasShiny ? ' ✨' : '') + '\n' + typeLine(p.types) + ' · from *' + s.eventTitle + '*';
+      return '**' + p.name + '**' + (p.hasShiny ? ' ' + SHINY_EMOJI : '') + '\n' + typeLine(p.types) + ' · from *' + s.eventTitle + '*';
     }).filter(Boolean);
     addListField(embed, '🌿 Spawns', entries);
-    embed.setFooter({ text: '✨ = shiny available for this species · unofficial fan project' });
+    embed.setFooter({ text: `${SHINY_EMOJI} = shiny available for this species · unofficial fan project` });
 
     await interaction.reply({ embeds: [embed] });
   },

@@ -31,6 +31,13 @@ const TYPE_EMOJI = {
   steel:'<:steel:1539959779110162463>', fairy:'<:fairy:1539959745509593221>'
 };
 
+// Same custom-emoji set, for shiny markers. As inline text (embed descriptions/
+// fields) use SHINY_EMOJI directly; on a Button, custom emoji only renders via
+// ButtonBuilder#setEmoji(SHINY_EMOJI_COMPONENT) — embedding this string in
+// .setLabel() would show up as broken literal text instead of the icon.
+const SHINY_EMOJI = '<:shiny:1539959777042505902>';
+const SHINY_EMOJI_COMPONENT = { id: '1539959777042505902', name: 'shiny' };
+
 // attacker type -> { defender type: multiplier }, only non-1x listed
 const TYPE_CHART = {
   water:  {fire:1.6, ground:1.6, rock:1.6, water:0.625, grass:0.625, dragon:0.625},
@@ -61,4 +68,4 @@ function typeEffectiveness(attackType, defTypes) {
   return mult;
 }
 
-module.exports = { TYPE_COLORS, TYPE_LIST, TYPE_EMOJI, TYPE_CHART, typeEffectiveness };
+module.exports = { TYPE_COLORS, TYPE_LIST, TYPE_EMOJI, SHINY_EMOJI, SHINY_EMOJI_COMPONENT, TYPE_CHART, typeEffectiveness };

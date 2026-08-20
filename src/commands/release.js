@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { POKEMON, autocompleteChoices } = require('../data/roster');
 const { baseEmbed, typeLine } = require('../utils/embeds');
+const { SHINY_EMOJI } = require('../data/types');
 const { isRateLimited } = require('../utils/rate-limit');
 const db = require('../db');
 
@@ -50,7 +51,7 @@ module.exports = {
     }
 
     const embed = baseEmbed(`👋 Released ${p.name}`)
-      .setDescription(`${shiny ? '✨ Shiny ' : ''}**${p.name}** removed from your profile.\n${typeLine(p.types)}`)
+      .setDescription(`${shiny ? SHINY_EMOJI + ' Shiny ' : ''}**${p.name}** removed from your profile.\n${typeLine(p.types)}`)
       .setColor(0x8FC0FF);
     await interaction.reply({ embeds: [embed], ephemeral: true });
   },

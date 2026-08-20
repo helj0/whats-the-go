@@ -72,7 +72,8 @@ client.on('interactionCreate', async (interaction) => {
         // legacy 2-part id from /raids quick-jump buttons: counters:<pokemonId>
         const target = POKEMON[action];
         if (!target) return interaction.reply({ content: 'Species not found.', flags: MessageFlags.Ephemeral });
-        await interaction.reply({ embeds: [buildCountersEmbed(target)] });
+        const { embed, files } = buildCountersEmbed(target);
+        await interaction.reply({ embeds: [embed], files });
         return;
       }
 

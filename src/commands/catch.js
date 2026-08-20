@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { POKEMON, autocompleteChoices } = require('../data/roster');
 const { liveEvents } = require('../utils/event-helpers');
 const { baseEmbed, typeLine } = require('../utils/embeds');
+const { SHINY_EMOJI } = require('../data/types');
 const { isRateLimited } = require('../utils/rate-limit');
 const db = require('../db');
 
@@ -58,7 +59,7 @@ module.exports = {
     const ev = findLiveEventFor(id);
     await db.addCatch(interaction.user.id, id, { shiny, cp, eventId: ev ? ev.id : null });
 
-    const embed = baseEmbed(`${shiny ? '✨ Shiny caught!' : '🎾 Caught!'}`)
+    const embed = baseEmbed(`${shiny ? SHINY_EMOJI + ' Shiny caught!' : '🎾 Caught!'}`)
       .setDescription(`**${p.name}**${cp ? ` · CP ${cp}` : ''}\n${typeLine(p.types)}`)
       .setColor(shiny ? 0xFFD666 : 0x5CEBA8);
     if (ev) embed.addFields({ name: 'Tagged to event', value: ev.title });
