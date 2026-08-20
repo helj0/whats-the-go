@@ -8,6 +8,7 @@ const { startScheduler } = require('./scheduler');
 const { startLiveEventsRefresh } = require('./data/live-events');
 const { POKEMON } = require('./data/roster');
 const { buildCountersEmbed } = require('./commands/counters');
+const { buildEventListView, buildEventDetailView, toggleEventCatch } = require('./utils/event-view');
 
 // Process-level safety nets — one bad promise rejection anywhere (including
 // in the scheduler's background loop, which isn't covered by the
@@ -64,11 +65,38 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.isButton()) {
-      const [action, payload] = interaction.customId.split(':');
-      if (action === 'counters') {
-        const target = POKEMON[payload];
+      const parts = interaction.customId.split(':');
+      const [ns, action] = parts;
+
+      if (ns === 'counters') {
+        // legacy 2-part id from /raids quick-jump buttons: counters:<pokemonId>
+        const target = POKEMON[action];
         if (!target) return interaction.reply({ content: 'Species not found.', flags: MessageFlags.Ephemeral });
         await interaction.reply({ embeds: [buildCountersEmbed(target)] });
+        return;
+      }
+
+      if (ns === 'ev') {
+        if (action === 'back') {
+          const view = await buildEventListView();
+          await interaction.update(view);
+          return;
+        }
+        if (action === 'v') {
+          const [, , eventId] = parts;
+          const view = await buildEventDetailView(interaction.user.id, eventId);
+          if (!view) return interaction.reply({ content: 'That event isn\u2019t live anymore.', flags: MessageFlags.Ephemeral });
+          await interaction.update(view);
+          return;
+        }
+        if (action === 'c') {
+          const [, , eventId, pokemonId, kind] = parts;
+          await toggleEventCatch(interaction.user.id, eventId, pokemonId, kind === 's');
+          const view = await buildEventDetailView(interaction.user.id, eventId);
+          if (!view) return interaction.reply({ content: 'That event isn\u2019t live anymore.', flags: MessageFlags.Ephemeral });
+          await interaction.update(view);
+          return;
+        }
       }
       return;
     }

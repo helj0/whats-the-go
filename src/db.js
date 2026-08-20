@@ -113,6 +113,16 @@ async function removeMostRecentCatch(userId, pokemonId, shiny) {
   );
   return rows[0] || null;
 }
+async function removeEventCatch(userId, pokemonId, shiny, eventId) {
+  const { rows } = await pool.query(
+    `DELETE FROM catches WHERE id = (
+       SELECT id FROM catches WHERE user_id=$1 AND pokemon_id=$2 AND shiny=$3 AND event_id=$4
+       ORDER BY caught_at DESC LIMIT 1
+     ) RETURNING *`,
+    [userId, pokemonId, shiny, eventId]
+  );
+  return rows[0] || null;
+}
 async function hasCatch(userId, pokemonId, shiny, eventId) {
   const { rows } = await pool.query(
     `SELECT 1 FROM catches WHERE user_id=$1 AND pokemon_id=$2 AND shiny=$3 AND event_id=$4 LIMIT 1`,
@@ -157,5 +167,5 @@ module.exports = {
   pool, initDb,
   setGuildEventChannel, getGuildSettings, getAllGuildSettingsWithChannel, markEventAnnounced,
   upsertTrainer, getTrainer,
-  addCatch, removeMostRecentCatch, hasCatch, getRecentCatches, getCatchCounts, getEventCatches, getTopCollectors,
+  addCatch, removeMostRecentCatch, removeEventCatch, hasCatch, getRecentCatches, getCatchCounts, getEventCatches, getTopCollectors,
 };
