@@ -926,7 +926,7 @@ const POKEMON_BASIC_RAW=[
 [957,"Tinkatink",["fairy", "steel"],false,"regular"],
 [958,"Tinkatuff",["fairy", "steel"],false,"regular"],
 [959,"Tinkaton",["fairy", "steel"],false,"regular"],
-[960,"Wiglett",["water"],false,"regular"],
+[960,"Wiglett",["water"],true,"regular"],
 [961,"Wugtrio",["water"],false,"regular"],
 [962,"Bombirdier",["flying", "dark"],false,"regular"],
 [963,"Finizen",["water"],false,"regular"],
