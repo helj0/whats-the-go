@@ -10,21 +10,25 @@ function eventStatus(ev) {
 function liveEvents() { return getEvents().filter(ev => eventStatus(ev) === 'live'); }
 function upcomingEvents() { return getEvents().filter(ev => eventStatus(ev) === 'upcoming'); }
 
-function formatCountdown(ms) {
-  if (ms < 0) ms = 0;
-  const totalH = Math.floor(ms / 3600000);
-  const m = Math.floor((ms % 3600000) / 60000);
-  if (totalH >= 24) {
-    const dd = Math.floor(totalH / 24), rh = totalH % 24;
-    return `${dd}d ${rh}h`;
-  }
-  return `${totalH}h ${m}m`;
+// Discord renders <t:UNIX_SECONDS:STYLE> tags in each viewer's own local
+// timezone and locale automatically, client-side \u2014 that's the only reliable
+// way for a bot to show "the right" time per user, since Discord's API never
+// exposes a user's timezone to bots. This replaces the old hand-formatted
+// en-US strings, which rendered in whatever timezone the bot process itself
+// happened to be running in (i.e. the same wall-clock time for every viewer
+// regardless of where they actually are).
+// Styles: t/T = short/long time, d/D = short/long date, f/F = short/long
+// date+time, R = relative ("in 3 hours") \u2014 see Discord's timestamp docs.
+function discordTimestamp(ms, style = 'f') {
+  return `<t:${Math.floor(ms / 1000)}:${style}>`;
+}
+
+function formatRelative(ms) {
+  return discordTimestamp(ms, 'R');
 }
 
 function formatRange(ev) {
-  const s = new Date(ev.start), e = new Date(ev.end);
-  const opts = { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' };
-  return `${s.toLocaleString('en-US', opts)} \u2192 ${e.toLocaleString('en-US', opts)}`;
+  return `${discordTimestamp(ev.start, 'f')} \u2192 ${discordTimestamp(ev.end, 'f')}`;
 }
 
 function currentRaidBosses() {
@@ -50,4 +54,4 @@ function currentWildSpawns() {
   return Object.values(byId);
 }
 
-module.exports = { eventStatus, liveEvents, upcomingEvents, formatCountdown, formatRange, currentRaidBosses, currentWildSpawns };
+module.exports = { eventStatus, liveEvents, upcomingEvents, discordTimestamp, formatRelative, formatRange, currentRaidBosses, currentWildSpawns };

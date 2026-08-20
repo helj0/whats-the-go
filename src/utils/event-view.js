@@ -6,7 +6,7 @@
 
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getEvents } = require('../data/live-events');
-const { eventStatus, formatRange, formatCountdown } = require('./event-helpers');
+const { eventStatus, formatRange, formatRelative } = require('./event-helpers');
 const { eventFeaturedSpecies } = require('./medals');
 const { POKEMON } = require('../data/roster');
 const { recommendItems } = require('./recommendations');
@@ -38,7 +38,7 @@ async function buildEventListView() {
     return { embeds: [embed], components: [] };
   }
   if (live.length) {
-    const entries = live.map(ev => '**' + ev.title + '**\nEnds in ' + formatCountdown(ev.end - Date.now()) + ' \u00b7 ' + formatRange(ev));
+    const entries = live.map(ev => '**' + ev.title + '**\nEnds ' + formatRelative(ev.end) + ' \u00b7 ' + formatRange(ev));
     addListField(embed, '🟢 Live now — tap one below to open it', entries);
   } else {
     embed.setDescription("Nothing live right now — check what's coming up below.");
@@ -68,7 +68,7 @@ async function buildUpcomingListView() {
   if (upcoming.length === 0) {
     embed.setDescription('Nothing upcoming on the calendar right now — check back soon!');
   } else {
-    const entries = upcoming.map(ev => '**' + ev.title + '**\nStarts in ' + formatCountdown(ev.start - Date.now()) + ' \u00b7 ' + formatRange(ev));
+    const entries = upcoming.map(ev => '**' + ev.title + '**\nStarts ' + formatRelative(ev.start) + ' \u00b7 ' + formatRange(ev));
     addListField(embed, '🔜 On deck', entries);
   }
 

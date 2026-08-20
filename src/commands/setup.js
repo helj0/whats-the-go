@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
 const { baseEmbed } = require('../utils/embeds');
+const { discordTimestamp } = require('../utils/event-helpers');
 const { getStatus } = require('../data/live-events');
 const db = require('../db');
 
@@ -39,7 +40,7 @@ module.exports = {
       name: '📡 Event data source',
       value: liveStatus.usingFallback
         ? `⚠️ Running on static fallback data (${liveStatus.eventCount} events) \u2014 live fetch from ScrapedDuck ${liveStatus.lastFetchError ? 'failed: ' + liveStatus.lastFetchError : "hasn't succeeded yet"}.`
-        : `✅ Live data from ScrapedDuck (${liveStatus.eventCount} events), last refreshed ${liveStatus.lastFetchTime ? liveStatus.lastFetchTime.toLocaleString() : 'never'}.`,
+        : `✅ Live data from ScrapedDuck (${liveStatus.eventCount} events), last refreshed ${liveStatus.lastFetchTime ? discordTimestamp(liveStatus.lastFetchTime.getTime(), 'R') : 'never'}.`,
     });
     await interaction.reply({ embeds: [embed], ephemeral: true });
   },
